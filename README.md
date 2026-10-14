@@ -1,38 +1,46 @@
-# Servidor CSV de ventas
+# Sales CSV Server
 
-API en FastAPI que recibe un archivo CSV de ventas, lo valida y guarda sus filas en PostgreSQL.
-Si el archivo tiene cualquier error no se guarda nada: se responde con la lista de errores
-indicando línea y columna.
+**English** | [Español](README.es.md)
 
-## Levantarlo
+A FastAPI service that receives a sales CSV file, validates it and stores its rows in PostgreSQL.
+If the file has any error, nothing is saved: the response lists every error with its line and
+column.
 
-Requiere Docker.
+> The API, the CSV columns and the error messages are in Spanish (the domain language of the
+> project); this README explains them in English.
+
+## Run it
+
+Requires Docker.
 
 ```bash
 docker compose up -d --build
 ```
 
-- API: http://localhost:8000 (redirige a la documentación interactiva en `/docs`, desde donde se
-  puede subir un CSV con "Try it out")
-- PostgreSQL: `localhost:5433`, usuario `postgres`, contraseña `postgres`, base `ventas`
+- API: http://localhost:8000 (redirects to the interactive docs at `/docs`, where you can upload a
+  CSV with "Try it out")
+- PostgreSQL: `localhost:5433`, user `postgres`, password `postgres`, database `ventas`
 
-La tabla `ventas` se crea sola al arrancar la API. Los datos persisten en el volumen `pgdata`;
-`docker compose down -v` los borra.
+Credentials and ports can be changed by copying `.env.example` to `.env`; without that file the
+defaults above are used.
 
-## Subir un archivo
+The `ventas` table is created automatically when the API starts. Data persists in the `pgdata`
+volume; `docker compose down -v` deletes it.
+
+## Upload a file
 
 ```bash
 curl -F "archivo=@ventas_muestra.csv" http://localhost:8000/upload
 ```
 
-| Código | Cuándo                                               |
-|--------|------------------------------------------------------|
-| 200    | Archivo válido; devuelve `filas_guardadas`           |
-| 422    | Archivo inválido; devuelve los errores, no guarda nada |
-| 413    | El archivo supera 5 MB                               |
-| 503    | No se pudo escribir en la base; no guarda nada       |
+| Status | When                                                      |
+|--------|-----------------------------------------------------------|
+| 200    | Valid file; returns `filas_guardadas` (rows saved)        |
+| 422    | Invalid file; returns the errors, nothing is saved        |
+| 413    | The file is larger than 5 MB                              |
+| 503    | The database write failed; nothing is saved               |
 
-Ejemplo de respuesta 422 (se muestran como máximo 50 errores; `total_errores` trae el total):
+Example 422 response (at most 50 errors are listed; `total_errores` holds the full count):
 
 ```json
 {
@@ -44,49 +52,49 @@ Ejemplo de respuesta 422 (se muestran como máximo 50 errores; `total_errores` t
 }
 ```
 
-`fila` es el número de línea del archivo (el encabezado es la línea 1). Es `null` en los errores
-que afectan al archivo completo, como una codificación incorrecta.
+`fila` is the line number in the file (the header is line 1). It is `null` for errors that
+affect the whole file, such as a wrong encoding.
 
-Subir de nuevo un `id` que ya existe actualiza esa fila, así que cargar el mismo archivo dos veces
-no duplica datos.
+Uploading an `id` that already exists updates that row, so loading the same file twice does not
+duplicate data.
 
-## Formato del CSV
+## CSV format
 
-UTF-8 (con o sin BOM), separado por comas, con encabezado. Las columnas pueden venir en cualquier
-orden, pero deben ser exactamente estas:
+UTF-8 (with or without BOM), comma-separated, with a header row. Columns may come in any order,
+but must be exactly these:
 
-| Columna           | Regla                                                        |
-|-------------------|--------------------------------------------------------------|
-| `id`              | Entero mayor que 0, único dentro del archivo                 |
-| `cliente`         | Texto no vacío                                               |
-| `ciudad`          | Texto no vacío                                               |
-| `producto`        | Texto no vacío                                               |
-| `cantidad`        | Entero mayor que 0                                           |
-| `precio_unitario` | Número mayor que 0, máximo 2 decimales, punto como separador |
-| `fecha`           | `AAAA-MM-DD`                                                 |
+| Column            | Meaning    | Rule                                                      |
+|-------------------|------------|-----------------------------------------------------------|
+| `id`              | Sale ID    | Integer greater than 0, unique within the file            |
+| `cliente`         | Customer   | Non-empty text                                            |
+| `ciudad`          | City       | Non-empty text                                            |
+| `producto`        | Product    | Non-empty text                                            |
+| `cantidad`        | Quantity   | Integer greater than 0                                    |
+| `precio_unitario` | Unit price | Number greater than 0, at most 2 decimals, dot separator  |
+| `fecha`           | Date       | `YYYY-MM-DD`                                              |
 
-Se ignoran los espacios alrededor de cada valor y las líneas en blanco.
+Whitespace around values and blank lines are ignored.
 
-Archivos de ejemplo incluidos:
+Sample files included:
 
-- `ventas_muestra.csv`: 100 filas válidas.
-- `ventas_defectuoso.csv`: un error distinto en cada fila; se rechaza completo.
-- `ventas_sin_columnas.csv`: encabezado equivocado.
+- `ventas_muestra.csv`: 100 valid rows.
+- `ventas_defectuoso.csv`: a different error on each row; the whole file is rejected.
+- `ventas_sin_columnas.csv`: wrong header.
 
-## Ver los datos
+## View the data
 
 ```bash
 docker compose exec db psql -U postgres -d ventas -c "SELECT * FROM ventas LIMIT 10;"
 ```
 
-O con un cliente gráfico (Postico, DBeaver, pgAdmin) usando los datos de conexión de arriba.
-Ojo con el puerto: es `5433`, no el `5432` por defecto.
+Or use a GUI client (Postico, DBeaver, pgAdmin) with the connection details above. Mind the
+port: it is `5433`, not the default `5432`.
 
 ## Tests
 
-Los tests de la API necesitan la base levantada (`docker compose up -d db`) y usan una base
-aparte, `ventas_test`, que crean solos; no tocan los datos de `ventas`. Si Postgres no está
-disponible, esos tests se saltan y los de validación corren igual.
+The API tests need the database running (`docker compose up -d db`) and use a separate
+`ventas_test` database, created automatically, so they never touch the `ventas` data. If
+Postgres is not available those tests are skipped and the validation tests still run.
 
 ```bash
 python3 -m venv .venv
@@ -94,12 +102,12 @@ python3 -m venv .venv
 .venv/bin/pytest
 ```
 
-Los tests corren también en GitHub Actions en cada push (`.github/workflows/tests.yml`).
+Tests also run on GitHub Actions on every push (`.github/workflows/tests.yml`).
 
-Para apuntar a otro servidor: `TEST_PG_SERVER=postgresql://usuario:clave@host:puerto .venv/bin/pytest`.
+To point at another server: `TEST_PG_SERVER=postgresql://user:password@host:port .venv/bin/pytest`.
 
-## Estructura
+## Project structure
 
-- `main.py`: la API (`POST /upload`), creación de la tabla y guardado en una sola transacción.
-- `validation.py`: lectura y validación del CSV.
-- `tests/`: tests de validación y de la API.
+- `main.py`: the API (`POST /upload`), table creation and saving in a single transaction.
+- `validation.py`: CSV parsing and validation.
+- `tests/`: validation and API tests.
