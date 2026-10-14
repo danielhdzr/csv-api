@@ -1,5 +1,7 @@
 # Sales CSV Server
 
+[![tests](https://github.com/danielhdzr/csv-api/actions/workflows/tests.yml/badge.svg)](https://github.com/danielhdzr/csv-api/actions/workflows/tests.yml)
+
 **English** | [Español](README.es.md)
 
 A FastAPI service that receives a sales CSV file, validates it and stores its rows in PostgreSQL.

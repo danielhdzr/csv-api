@@ -1,5 +1,7 @@
 # Servidor CSV de ventas
 
+[![tests](https://github.com/danielhdzr/csv-api/actions/workflows/tests.yml/badge.svg)](https://github.com/danielhdzr/csv-api/actions/workflows/tests.yml)
+
 [English](README.md) | **Español**
 
 API en FastAPI que recibe un archivo CSV de ventas, lo valida y guarda sus filas en PostgreSQL.
