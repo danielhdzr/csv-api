@@ -1,0 +1,13 @@
+id,cliente,ciudad,producto,cantidad,precio_unitario,fecha
+1,Diego Martínez,Guadalajara,Webcam,1,827.28,2026-09-04
+2,Diego García,Mérida,Mouse,0,953.61,2026-07-03
+3,,Mérida,Laptop,1,7881.07,2026-02-08
+4,Lucía García,Mérida,Auricular,cuatro,613.66,2026-04-02
+5,Paula Martínez,CDMX,Laptop,2,-5205.41,2026-05-18
+6,Lucía Martínez,Tampico,Auricular,5,6123.849,2026-06-04
+7,Paula López,Mérida,Teclado,5,2075.71,14/09/2026
+8,Diego Sánchez,Mérida,Laptop,3,2952.82,2026-13-45
+abc,Carlos López,Mérida,Monitor,5,4779.34,2026-06-24
+10,Jorge Rodríguez,Mérida,Teclado,1
+1,Diego Martínez,Guadalajara,Webcam,1,827.28,2026-09-04
+12,Paula Pérez,CDMX,Webcam,3,5707.36,2026-08-03
